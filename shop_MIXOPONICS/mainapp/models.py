@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 #1 Категории
 #2 Продукт
-#3 Карта продукта
+#3 Корзина продукта
 #4 Корзина
 #5 Заказ
 #6 Покупатель
@@ -31,3 +31,16 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class CartProduct(models.Model):
+
+    user = modeles.ForeidnKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE)
+    cart = modeles.ForeidnKey('Cart', verbose_name='Корзина', on_delete=models.CASCADE)
+    product = modeles.ForeidnKey('Product', verbose_name='Товар', on_delete=models.CASCADE)
+    qty = models.PositiveIntegrField(default=0)
+    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
+
+    def __str__(self):
+        return f"Продукт: {self.product.title} (для корзины)"
+
