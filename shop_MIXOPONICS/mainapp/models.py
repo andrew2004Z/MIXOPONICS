@@ -8,3 +8,13 @@ from django.db import models
 #5 Заказ
 #6 Покупатель
 #7 Спецификации
+
+
+
+class Category(models.Model):
+
+    name = models.CharField(max_lenght=255,verbose_name='Имя категории')
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
