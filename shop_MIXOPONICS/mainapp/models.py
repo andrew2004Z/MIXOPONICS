@@ -1,19 +1,10 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 User = get_user_model()
-
-
-# Create your models here.
-#1 Категории
-#2 Продукт
-#3 Корзина продукта
-#4 Корзина
-#5 Заказ
-#6 Покупатель
-#7 Спецификации
 
 
 
@@ -28,6 +19,9 @@ class Category(models.Model):
 
 class Product(models.Model):
 
+    class Meta:
+        abstract = True
+
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.CASCADE)
     title = models.CharField(max_length=255,verbose_name='Наименование')
     slug = models.SlugField(unique=True)
@@ -39,11 +33,34 @@ class Product(models.Model):
         return self.title
 
 
+class Ponic(Product):
+
+    ponics_type = models.CharField(max_length=255, verbose_name='Тип поники')
+    size = models.CharField(max_length=255, verbose_name='Размеры')
+    volume_back = models.CharField(max_length=255, verbose_name='Объем бака')
+    color = models.CharField(max_length=255, verbose_name='Цвет корпуса')
+
+    def __str__(self):
+        return f'{self.category.name}: {self.title}'
+
+
+class Seed(Product):
+
+    variety = models.CharField(max_length=255, verbose_name='Сорт')
+    description = models.TextField(null=True, verbose_name='Описание')
+    col = models.CharField(max_length=255, verbose_name='Количество семян в упаковке')
+
+    def __str__(self):
+        return f'{self.category.name}: {self.title}'
+    
+
 class CartProduct(models.Model):
 
     user = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Корзина', on_delete=models.CASCADE, related_name='related_products')
-    product = models.ForeignKey(Product, verbose_name='Товар', on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
     qty = models.PositiveIntegerField(default=0)
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
 
@@ -70,13 +87,3 @@ class Customer(models.Model):
 
     def __str__(self):
         return f'Покупатель: {self.user.first_name} {self.user.last_name}'
-
-
-class Specifications(models.Model):
-    
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    name = models.CharField(max_length=255, verbose_name='Имя товара для характеристик')
-
-    def __str__(self):
-        return f'Характеристики для товара: {self.name}'
